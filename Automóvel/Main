@@ -1,0 +1,28 @@
+import java.util.Scanner;
+
+public class Main {
+
+	public static void main(String[] args) {
+		Motor motor = new Motor(140);
+		Direcao direcao = new Direcao("Preto");
+		Automovel auto = new Automovel(motor, direcao);
+		Scanner teclado = new Scanner(System.in);
+
+		System.out.println("Potência: " + auto.getMotor().getPotencia());
+		System.out.println("Cor: " + auto.getDirecao().getCor());
+
+		System.out.println("Digite uma nova potência: ");
+		auto.getMotor().setPotencia(teclado.nextInt());
+		System.out.println("Digite uma nova cor: ");
+		auto.getDirecao().setCor(teclado.next());
+
+		System.out.println("Potência: " + auto.getMotor().getPotencia());
+		System.out.println("Cor: " + auto.getDirecao().getCor());
+
+		Motor motor2 = new Motor(240);
+		auto.setMotor(motor2);
+		System.out.println("Potência: " + auto.getMotor().getPotencia());
+		System.out.println("Cor: " + auto.getDirecao().getCor());
+	}
+
+}
