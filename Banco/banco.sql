@@ -26,9 +26,9 @@ CREATE SCHEMA IF NOT EXISTS `restaurante_covil` DEFAULT CHARACTER SET utf8mb4 CO
 USE `restaurante_covil`;
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`usuarios`
+-- Table `restaurante_covil`.`usuario`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`usuarios` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`usuario` (
   `id_usuario` INT NOT NULL AUTO_INCREMENT,
   `nome_completo` VARCHAR(100) NOT NULL,
   `cpf` VARCHAR(14) NOT NULL,
@@ -44,12 +44,12 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`usuarios` (
   UNIQUE INDEX `email_UNIQUE` (`email` ASC),
   UNIQUE INDEX `login_UNIQUE` (`login` ASC))
 ENGINE = InnoDB
-COMMENT = 'Tabela de usuários do sistema (cadastro geral)';
+COMMENT = 'Tabela de usuário do sistema (cadastro geral)';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`funcionarios`
+-- Table `restaurante_covil`.`funcionario`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`funcionarios` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`funcionario` (
   `id_funcionario` INT NOT NULL AUTO_INCREMENT,
   `nome` VARCHAR(100) NOT NULL,
   `cpf` VARCHAR(14) NOT NULL,
@@ -64,12 +64,12 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`funcionarios` (
   UNIQUE INDEX `cpf_UNIQUE` (`cpf` ASC),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC))
 ENGINE = InnoDB
-COMMENT = 'Tabela de funcionários do restaurante';
+COMMENT = 'Tabela de funcionário do restaurante';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`clientes`
+-- Table `restaurante_covil`.`cliente`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`clientes` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`cliente` (
   `id_cliente` INT NOT NULL AUTO_INCREMENT,
   `nome_completo` VARCHAR(100) NOT NULL,
   `email` VARCHAR(100) NOT NULL,
@@ -84,12 +84,12 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`clientes` (
   UNIQUE INDEX `cpf_UNIQUE` (`cpf` ASC),
   UNIQUE INDEX `email_UNIQUE` (`email` ASC))
 ENGINE = InnoDB
-COMMENT = 'Tabela de clientes do restaurante';
+COMMENT = 'Tabela de cliente do restaurante';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`categorias_cardapio`
+-- Table `restaurante_covil`.`categoria_cardapio`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`categorias_cardapio` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`categoria_cardapio` (
   `id_categoria` INT NOT NULL AUTO_INCREMENT,
   `nome_categoria` VARCHAR(50) NOT NULL,
   `descricao` VARCHAR(255) NULL,
@@ -101,18 +101,20 @@ ENGINE = InnoDB
 COMMENT = 'Categorias do cardápio (hambúrguers, acompanhamentos, bebidas)';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`produtos`
+-- Table `restaurante_covil`.`produto`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`produtos` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`produto` (
   `id_produto` INT NOT NULL AUTO_INCREMENT,
   `id_categoria` INT NOT NULL,
   `nome_produto` VARCHAR(100) NOT NULL,
   `descricao` TEXT NOT NULL,
-  `ingredientes` TEXT NULL,
   `preco` DECIMAL(10,2) NOT NULL,
   `preco_antigo` DECIMAL(10,2) NULL,
   `em_promocao` TINYINT(1) NOT NULL DEFAULT 0,
   `mais_vendido` TINYINT(1) NOT NULL DEFAULT 0,
+  `tempo_preparo` VARCHAR(20) NULL COMMENT 'Ex: 15-20min',
+  `porcoes` VARCHAR(50) NULL COMMENT 'Ex: Para 1-2 pessoas',
+  `tipo` VARCHAR(50) NULL COMMENT 'Ex: Clássico, Premium, Tradicional',
   `imagem_url` VARCHAR(500) NULL,
   `icone` VARCHAR(50) NULL,
   `disponivel` TINYINT(1) NOT NULL DEFAULT 1,
@@ -121,16 +123,79 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`produtos` (
   INDEX `fk_produtos_categoria_idx` (`id_categoria` ASC),
   CONSTRAINT `fk_produtos_categoria`
     FOREIGN KEY (`id_categoria`)
-    REFERENCES `restaurante_covil`.`categorias_cardapio` (`id_categoria`)
+    REFERENCES `restaurante_covil`.`categoria_cardapio` (`id_categoria`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-COMMENT = 'Tabela de produtos do cardápio';
+COMMENT = 'Tabela de produto do cardápio';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`mesas`
+-- Table `restaurante_covil`.`categoria_insumo`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`mesas` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`categoria_insumo` (
+  `id_categoria_insumo` INT NOT NULL AUTO_INCREMENT,
+  `nome_categoria` VARCHAR(50) NOT NULL,
+  `descricao` VARCHAR(255) NULL,
+  PRIMARY KEY (`id_categoria_insumo`),
+  UNIQUE INDEX `nome_categoria_UNIQUE` (`nome_categoria` ASC))
+ENGINE = InnoDB
+COMMENT = 'Categoria de insumo';
+
+-- -----------------------------------------------------
+-- Table `restaurante_covil`.`insumo`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`insumo` (
+  `id_insumo` INT NOT NULL AUTO_INCREMENT,
+  `id_categoria_insumo` INT NOT NULL,
+  `nome_insumo` VARCHAR(100) NOT NULL,
+  `unidade_medida` ENUM('kg', 'g', 'l', 'ml', 'un', 'pacote', 'caixa', 'fatia', 'folha') NOT NULL,
+  `quantidade_estoque` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `estoque_minimo` DECIMAL(10,2) NOT NULL,
+  `custo_unitario` DECIMAL(10,2) NOT NULL,
+  `fornecedor` VARCHAR(100) NULL,
+  `data_validade` DATE NULL,
+  `data_cadastro` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `data_ultima_atualizacao` DATETIME NULL,
+  PRIMARY KEY (`id_insumo`),
+  INDEX `fk_insumos_categoria_idx` (`id_categoria_insumo` ASC),
+  CONSTRAINT `fk_insumos_categoria`
+    FOREIGN KEY (`id_categoria_insumo`)
+    REFERENCES `restaurante_covil`.`categoria_insumo` (`id_categoria_insumo`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+COMMENT = 'Tabela de insumo/estoque';
+
+-- -----------------------------------------------------
+-- Table `restaurante_covil`.`receita`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`receita` (
+  `id_receita` INT NOT NULL AUTO_INCREMENT,
+  `id_produto` INT NOT NULL,
+  `id_insumo` INT NOT NULL,
+  `quantidade_necessaria` DECIMAL(10,3) NOT NULL COMMENT 'Quantidade do insumo necessária',
+  `unidade` VARCHAR(20) NOT NULL COMMENT 'Unidade de medida (g, kg, ml, l, un)',
+  `observacao` VARCHAR(255) NULL COMMENT 'Ex: picado, ralado, inteiro',
+  PRIMARY KEY (`id_receita`),
+  INDEX `fk_receita_produto_idx` (`id_produto` ASC),
+  INDEX `fk_receita_insumo_idx` (`id_insumo` ASC),
+  CONSTRAINT `fk_receita_produto`
+    FOREIGN KEY (`id_produto`)
+    REFERENCES `restaurante_covil`.`produto` (`id_produto`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_receita_insumo`
+    FOREIGN KEY (`id_insumo`)
+    REFERENCES `restaurante_covil`.`insumo` (`id_insumo`)
+    ON DELETE RESTRICT
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+COMMENT = 'Tabela que relaciona produtos com seus insumos (receita)';
+
+-- -----------------------------------------------------
+-- Table `restaurante_covil`.`mesa`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`mesa` (
   `id_mesa` INT NOT NULL AUTO_INCREMENT,
   `numero_mesa` INT NOT NULL,
   `capacidade` INT NOT NULL,
@@ -141,12 +206,12 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`mesas` (
   PRIMARY KEY (`id_mesa`),
   UNIQUE INDEX `numero_mesa_UNIQUE` (`numero_mesa` ASC))
 ENGINE = InnoDB
-COMMENT = 'Tabela de mesas do restaurante';
+COMMENT = 'Tabela de mesa do restaurante';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`reservas`
+-- Table `restaurante_covil`.`reserva`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`reservas` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`reserva` (
   `id_reserva` INT NOT NULL AUTO_INCREMENT,
   `id_cliente` INT NULL,
   `id_mesa` INT NULL,
@@ -165,21 +230,21 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`reservas` (
   INDEX `idx_data_reserva` (`data_reserva` ASC),
   CONSTRAINT `fk_reservas_cliente`
     FOREIGN KEY (`id_cliente`)
-    REFERENCES `restaurante_covil`.`clientes` (`id_cliente`)
+    REFERENCES `restaurante_covil`.`cliente` (`id_cliente`)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
   CONSTRAINT `fk_reservas_mesa`
     FOREIGN KEY (`id_mesa`)
-    REFERENCES `restaurante_covil`.`mesas` (`id_mesa`)
+    REFERENCES `restaurante_covil`.`mesa` (`id_mesa`)
     ON DELETE SET NULL
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-COMMENT = 'Tabela de reservas de mesas';
+COMMENT = 'Tabela de reserva de mesa';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`avaliacoes`
+-- Table `restaurante_covil`.`avaliacao`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`avaliacoes` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`avaliacao` (
   `id_avaliacao` INT NOT NULL AUTO_INCREMENT,
   `id_cliente` INT NULL,
   `nome_cliente` VARCHAR(100) NOT NULL,
@@ -192,54 +257,17 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`avaliacoes` (
   INDEX `fk_avaliacoes_cliente_idx` (`id_cliente` ASC),
   CONSTRAINT `fk_avaliacoes_cliente`
     FOREIGN KEY (`id_cliente`)
-    REFERENCES `restaurante_covil`.`clientes` (`id_cliente`)
+    REFERENCES `restaurante_covil`.`cliente` (`id_cliente`)
     ON DELETE SET NULL
     ON UPDATE CASCADE,
   CONSTRAINT `chk_nota` CHECK (`nota` >= 1 AND `nota` <= 5))
 ENGINE = InnoDB
-COMMENT = 'Tabela de avaliações dos clientes';
+COMMENT = 'Tabela de avaliação de cliente';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`categorias_insumos`
+-- Table `restaurante_covil`.`movimentacao_estoque`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`categorias_insumos` (
-  `id_categoria_insumo` INT NOT NULL AUTO_INCREMENT,
-  `nome_categoria` VARCHAR(50) NOT NULL,
-  `descricao` VARCHAR(255) NULL,
-  PRIMARY KEY (`id_categoria_insumo`),
-  UNIQUE INDEX `nome_categoria_UNIQUE` (`nome_categoria` ASC))
-ENGINE = InnoDB
-COMMENT = 'Categorias de insumos';
-
--- -----------------------------------------------------
--- Table `restaurante_covil`.`insumos`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`insumos` (
-  `id_insumo` INT NOT NULL AUTO_INCREMENT,
-  `id_categoria_insumo` INT NOT NULL,
-  `nome_insumo` VARCHAR(100) NOT NULL,
-  `unidade_medida` ENUM('kg', 'g', 'l', 'ml', 'un', 'pacote', 'caixa') NOT NULL,
-  `quantidade_estoque` DECIMAL(10,2) NOT NULL DEFAULT 0,
-  `estoque_minimo` DECIMAL(10,2) NOT NULL,
-  `custo_unitario` DECIMAL(10,2) NOT NULL,
-  `fornecedor` VARCHAR(100) NULL,
-  `data_validade` DATE NULL,
-  `data_cadastro` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `data_ultima_atualizacao` DATETIME NULL,
-  PRIMARY KEY (`id_insumo`),
-  INDEX `fk_insumos_categoria_idx` (`id_categoria_insumo` ASC),
-  CONSTRAINT `fk_insumos_categoria`
-    FOREIGN KEY (`id_categoria_insumo`)
-    REFERENCES `restaurante_covil`.`categorias_insumos` (`id_categoria_insumo`)
-    ON DELETE RESTRICT
-    ON UPDATE CASCADE)
-ENGINE = InnoDB
-COMMENT = 'Tabela de insumos/estoque';
-
--- -----------------------------------------------------
--- Table `restaurante_covil`.`movimentacoes_estoque`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`movimentacoes_estoque` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`movimentacao_estoque` (
   `id_movimentacao` INT NOT NULL AUTO_INCREMENT,
   `id_insumo` INT NOT NULL,
   `id_funcionario` INT NULL,
@@ -252,33 +280,33 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`movimentacoes_estoque` (
   INDEX `fk_movimentacao_funcionario_idx` (`id_funcionario` ASC),
   CONSTRAINT `fk_movimentacao_insumo`
     FOREIGN KEY (`id_insumo`)
-    REFERENCES `restaurante_covil`.`insumos` (`id_insumo`)
+    REFERENCES `restaurante_covil`.`insumo` (`id_insumo`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
   CONSTRAINT `fk_movimentacao_funcionario`
     FOREIGN KEY (`id_funcionario`)
-    REFERENCES `restaurante_covil`.`funcionarios` (`id_funcionario`)
+    REFERENCES `restaurante_covil`.`funcionario` (`id_funcionario`)
     ON DELETE SET NULL
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-COMMENT = 'Tabela de movimentações de estoque';
+COMMENT = 'Tabela de movimentação de estoque';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`categorias_gastos`
+-- Table `restaurante_covil`.`categoria_gasto`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`categorias_gastos` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`categoria_gasto` (
   `id_categoria_gasto` INT NOT NULL AUTO_INCREMENT,
   `nome_categoria` VARCHAR(50) NOT NULL,
   `descricao` VARCHAR(255) NULL,
   PRIMARY KEY (`id_categoria_gasto`),
   UNIQUE INDEX `nome_categoria_UNIQUE` (`nome_categoria` ASC))
 ENGINE = InnoDB
-COMMENT = 'Categorias de gastos operacionais';
+COMMENT = 'Categoria de gasto operacional';
 
 -- -----------------------------------------------------
--- Table `restaurante_covil`.`gastos`
+-- Table `restaurante_covil`.`gasto`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `restaurante_covil`.`gastos` (
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`gasto` (
   `id_gasto` INT NOT NULL AUTO_INCREMENT,
   `id_categoria_gasto` INT NOT NULL,
   `id_funcionario` INT NULL,
@@ -296,16 +324,16 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`gastos` (
   INDEX `idx_data_gasto` (`data_gasto` ASC),
   CONSTRAINT `fk_gastos_categoria`
     FOREIGN KEY (`id_categoria_gasto`)
-    REFERENCES `restaurante_covil`.`categorias_gastos` (`id_categoria_gasto`)
+    REFERENCES `restaurante_covil`.`categoria_gasto` (`id_categoria_gasto`)
     ON DELETE RESTRICT
     ON UPDATE CASCADE,
   CONSTRAINT `fk_gastos_funcionario`
     FOREIGN KEY (`id_funcionario`)
-    REFERENCES `restaurante_covil`.`funcionarios` (`id_funcionario`)
+    REFERENCES `restaurante_covil`.`funcionario` (`id_funcionario`)
     ON DELETE SET NULL
     ON UPDATE CASCADE)
 ENGINE = InnoDB
-COMMENT = 'Tabela de gastos operacionais';
+COMMENT = 'Tabela de gasto operacional';
 
 -- -----------------------------------------------------
 -- Table `restaurante_covil`.`registro_ponto`
@@ -323,15 +351,81 @@ CREATE TABLE IF NOT EXISTS `restaurante_covil`.`registro_ponto` (
   INDEX `idx_data_registro` (`data_registro` ASC),
   CONSTRAINT `fk_ponto_funcionario`
     FOREIGN KEY (`id_funcionario`)
-    REFERENCES `restaurante_covil`.`funcionarios` (`id_funcionario`)
+    REFERENCES `restaurante_covil`.`funcionario` (`id_funcionario`)
     ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB
 COMMENT = 'Tabela de registro de ponto dos funcionários';
 
 -- -----------------------------------------------------
--- Inserção de dados iniciais
+-- Table `restaurante_covil`.`fornecedores`
 -- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`fornecedores` (
+  `id_fornecedor` INT NOT NULL AUTO_INCREMENT,
+  `nome_fornecedor` VARCHAR(100) NOT NULL,
+  `cnpj` VARCHAR(18) NULL,
+  `telefone` VARCHAR(15) NOT NULL,
+  `email` VARCHAR(100) NULL,
+  `endereco` VARCHAR(255) NULL,
+  `cidade` VARCHAR(100) NULL,
+  `estado` VARCHAR(2) NULL,
+  `tipo_fornecimento` VARCHAR(100) NULL COMMENT 'Ex: Alimentos, Bebidas, Limpeza, Equipamentos',
+  `ativo` TINYINT(1) NOT NULL DEFAULT 1,
+  `data_cadastro` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id_fornecedor`),
+  UNIQUE INDEX `cnpj_UNIQUE` (`cnpj` ASC))
+ENGINE = InnoDB
+COMMENT = 'Tabela de fornecedores';
+
+-- -----------------------------------------------------
+-- Table `restaurante_covil`.`pedidos`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`pedidos` (
+  `id_pedido` INT NOT NULL AUTO_INCREMENT,
+  `id_cliente` INT NULL,
+  `id_mesa` INT NULL,
+  `id_funcionario` INT NULL COMMENT 'Funcionário que atendeu',
+  `numero_pedido` VARCHAR(20) NOT NULL,
+  `data_pedido` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `valor_total` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `desconto` DECIMAL(10,2) NULL DEFAULT 0,
+  `valor_final` DECIMAL(10,2) NOT NULL DEFAULT 0,
+  `status_pedido` ENUM('aberto', 'em_preparo', 'pronto', 'entregue', 'cancelado', 'finalizado') NOT NULL DEFAULT 'aberto',
+  `tipo_pedido` ENUM('local', 'delivery', 'retirada') NOT NULL DEFAULT 'local',
+  `observacoes` TEXT NULL,
+  `data_finalizacao` DATETIME NULL,
+  PRIMARY KEY (`id_pedido`),
+  UNIQUE INDEX `numero_pedido_UNIQUE` (`numero_pedido` ASC),
+  INDEX `fk_pedidos_cliente_idx` (`id_cliente` ASC),
+  INDEX `fk_pedidos_mesa_idx` (`id_mesa` ASC),
+  INDEX `fk_pedidos_funcionario_idx` (`id_funcionario` ASC),
+  INDEX `idx_data_pedido` (`data_pedido` ASC),
+  CONSTRAINT `fk_pedidos_cliente`
+    FOREIGN KEY (`id_cliente`)
+    REFERENCES `restaurante_covil`.`clientes` (`id_cliente`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_pedidos_mesa`
+    FOREIGN KEY (`id_mesa`)
+    REFERENCES `restaurante_covil`.`mesas` (`id_mesa`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  CONSTRAINT `fk_pedidos_funcionario`
+    FOREIGN KEY (`id_funcionario`)
+    REFERENCES `restaurante_covil`.`funcionarios` (`id_funcionario`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE)
+ENGINE = InnoDB
+COMMENT = 'Tabela de pedidos realizados';
+
+-- -----------------------------------------------------
+-- Table `restaurante_covil`.`itens_pedido`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `restaurante_covil`.`itens_pedido` (
+  `id_item_pedido` INT NOT NULL AUTO_INCREMENT,
+  `id_pedido` INT NOT NULL,
+  `id_produto` INT NOT NULL,
+  `
 
 -- Categorias do cardápio
 INSERT INTO `categorias_cardapio` (`nome_categoria`, `descricao`, `icone`, `ordem_exibicao`) VALUES
