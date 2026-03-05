@@ -1,73 +1,58 @@
+import { Pessoa } from "./Pessoa.js";
+
 export class Conta {
     constructor(titular) {
-    this.titular = titular;
-    this.saldo = 0;
+        this.titular = titular;
+        this.saldo = 0;
+        this.historico = [];
     }
 
-    depositar (valor) {
-        if (valor <= 0){
-            throw "Valor Insuficiente"
+    depositar(valor) {
+        if (valor <= 0) {
+            throw "Valor inválido";
         }
 
         this.saldo += valor;
+        this.historico.push("Depósito: R$ " + valor.toFixed(2));
     }
 
-    /*this.sacar = (valor) =>{
-        this.saldo -= valor;
-    }
-    */
-    
-    sacar (valor) {
-        if(this.saldo < valor){
-        throw "Saldo Insuficiente"
+    sacar(valor) {
+        if (this.saldo < valor) {
+            throw "Saldo insuficiente";
         }
-        this.saldo -= valor;
 
+        this.saldo -= valor;
+        this.historico.push("Saque: R$ " + valor.toFixed(2));
     }
 
-    transferir (outraConta,valor) {
+    transferir(outraConta, valor) {
         this.sacar(valor);
         outraConta.depositar(valor);
-    
+
+        this.historico.push(
+            "Transferência enviada para " +
+            outraConta.titular.nome +
+            " - R$ " + valor.toFixed(2)
+        );
+
+        outraConta.historico.push(
+            "Transferência recebida de " +
+            this.titular.nome +
+            " - R$ " + valor.toFixed(2)
+        );
+    }
+
+    exibirHistorico() {
+        console.log("Conta de: " + this.titular.nome);
+
+        if (this.historico.length === 0) {
+            console.log("Nenhuma operação realizada");
+        } else {
+            for (let operacao of this.historico) {
+                console.log(this.historico[operacao]);
+            }
+        }
+
+        console.log("Saldo atual: R$ " + this.saldo.toFixed(2));
     }
 }
-
-let conta1 = new Conta("Dudu");
-let conta2 = new Conta("Vivi")
-
-conta1.depositar(2000);
-conta2.depositar(3000);
-
-console.log("Transação 01")
-console.log(conta1.titular + " - R$ " + conta1.saldo)
-console.log(conta2.titular + " - R$ " + conta2.saldo)
-
-try {
-
-    conta1.sacar(2900);
-    conta2.sacar(1000);
-
-} catch (error) {
-    console.error("Erro: " + error );
-}
-
-console.log("Transação 02")
-console.log(conta1.titular + " - R$ " + conta1.saldo)
-console.log(conta2.titular + " - R$ " + conta2.saldo)
-
-conta2.transferir(conta1, 500);
-
-console.log("Transação 03")
-console.log(conta1.titular + " - R$ " + conta1.saldo)
-console.log(conta2.titular + " - R$ " + conta2.saldo)
-
-try{
-
-    conta1.depositar(0);
-
-} catch (error) {
-    console.error ("Erro: " + error);
-}
-
-console.log("Transação 4")
-console.log(conta1.titular + " - R$ " + conta1.saldo)
