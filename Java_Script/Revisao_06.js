@@ -1,6 +1,7 @@
-var precos = [30,10,20,50,60]
+let precos = [30,10,20,50,60]
 
-precos.map((precos)) => {
-    console.log(precos)
-    return precos
+let precosNovo = precos.map((item)=> (item*1.1))
+
+for (let i in precosNovo){
+    console.log(precosNovo[i])
 }
