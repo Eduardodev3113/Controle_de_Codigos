@@ -25,12 +25,19 @@ export class Carrinho {
         return;
     }
 
-    let contador = 1;
+/*    let contador = 1;
     for (let produto of this.itens) {
         console.log(contador + ". " + produto.nome + " - R$ " + produto.preco.toFixed(2));
-        contador++;
+        contador++; 
     }
+*/
+
+this.itens.map(item => {
+  console.log(item.nome + " - R$" + item.preco)
+})
 
     console.log("Total: R$ " + this.calcularTotal().toFixed(2));
 }
 }
+
+
