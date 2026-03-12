@@ -1,43 +1,45 @@
 export class Carrinho {
-    constructor(cliente) {
-        this.cliente = cliente;  
-        this.itens = [];          
-    }
+  constructor(cliente) {
+    this.cliente = cliente;
+    this.itens = [];
+  }
 
-    addProduto(produto){
-        this.itens.push(produto);
-    }
-    calcularTotal(){
-        let total = 0
+  addProduto(produto) {
+    this.itens.push(produto);
+  }
+  calcularTotal() {
+    let total = 0;
 
-        for (let produtos in this.itens){
-            console.log(produtos)
-            total += produtos.preco
-        }
-        return total
+    for (let produtos of this.itens) {
+      console.log(produtos);
+      total += produtos.preco;
     }
+    return total;
+  }
 
-    exibirResumo() {
+  exibirResumo() {
     console.log("Resumo do carrinho de " + this.cliente + ":");
 
     if (this.itens.length === 0) {
-        console.log("O carrinho está vazio.");
-        return;
+      console.log("O carrinho está vazio.");
+      return;
     }
 
-/*    let contador = 1;
+    /*    let contador = 1;
     for (let produto of this.itens) {
         console.log(contador + ". " + produto.nome + " - R$ " + produto.preco.toFixed(2));
         contador++; 
     }
 */
 
-this.itens.map(item => {
-  console.log(item.nome + " - R$" + item.preco)
-})
+    this.itens.map((item) => {
+      console.log(item.nome + " - R$" + item.preco);
+    });
 
     console.log("Total: R$ " + this.calcularTotal().toFixed(2));
-}
-}
+  }
 
-
+  filtrarProdutos(precoMinimo) {
+    return this.itens.filter((produto) => produto.preco >= precoMinimo);
+  }
+}
